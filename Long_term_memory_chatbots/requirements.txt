@@ -1,0 +1,7 @@
+langchain_core
+langchain_ollama
+streamlit
+langgraph
+pandas
+db-sqlite3
+ollama
