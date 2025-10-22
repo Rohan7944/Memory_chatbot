@@ -1,35 +1,29 @@
 from langchain_community.vectorstores import FAISS
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_ollama import OllamaEmbeddings, OllamaLLM
-from langchain.chains import RetrievalQA
+from langchain_ollama import OllamaEmbeddings
+
+import os
 
 from utils.chat_manager import prepare_vectordb_search_prompt
 
 # Configuration
 OLLAMA_MODEL = 'llama3.2:1b'
 ollama_embeddings = OllamaEmbeddings(model=OLLAMA_MODEL)
+vectordb_path = "data/faiss_index"
 
 def get_vectordb_search_results(user_question: str):
     # Get vector db search prompt
     prompt = prepare_vectordb_search_prompt(user_question)
     
     embeddings = ollama_embeddings
-    vectorstore_faiss = FAISS.load_local("data/faiss_index", embeddings, allow_dangerous_deserialization=True)
     
-    qa = RetrievalQA.from_chain_type(
-        llm = OllamaLLM(model=OLLAMA_MODEL),
-        chain_type="stuff",
-        retriever=vectorstore_faiss.as_retriever(
-            search_type="similarity", search_kwargs={"k",3}
-        ),
-        return_source_documents=True,
-        chain_type_kwargs={"prompt": prompt}
-    )
-    answer = qa({"query":user_question})
-    
-    print(f"VERBOSE: Vector DB search results created: {answer['result']}")
-    
-    return answer['result']
+    if os.path.exists(vectordb_path):
+        vectorstore_faiss = FAISS.load_local("data/faiss_index", embeddings, allow_dangerous_deserialization=True)
+        results = vectorstore_faiss.similarity_search(prompt)
+        print(f"VERBOSE: Vector DB search results created: {results[0].page_content}")
+        return results[0].page_content
+    else:
+        return None
 
 def update_vector_store(chat_summary):
     # Create a text data source for vector store documents and ingesting data
@@ -43,6 +37,6 @@ def update_vector_store(chat_summary):
     # Create vector embeddings and vector store
     embeddings = ollama_embeddings
     vectorstore_faiss = FAISS.from_texts(docs, embeddings)
-    vectorstore_faiss.save_local("data/faiss_vector_store")
+    vectorstore_faiss.save_local(vectordb_path)
     
     print(f"VERBOSE: Vector store updated")
