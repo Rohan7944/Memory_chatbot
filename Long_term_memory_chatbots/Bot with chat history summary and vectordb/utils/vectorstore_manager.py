@@ -18,10 +18,13 @@ def get_vectordb_search_results(user_question: str):
     embeddings = ollama_embeddings
     
     if os.path.exists(vectordb_path):
-        vectorstore_faiss = FAISS.load_local("data/faiss_index", embeddings, allow_dangerous_deserialization=True)
+        vectorstore_faiss = FAISS.load_local(vectordb_path, embeddings, allow_dangerous_deserialization=True)
         results = vectorstore_faiss.similarity_search(prompt)
-        print(f"VERBOSE: Vector DB search results created: {results[0].page_content}")
-        return results[0].page_content
+        r = ""
+        for doc in results:
+            r += f"{doc.page_content}\n"
+        print(f"VERBOSE: Vector DB search results created")
+        return r
     else:
         return None
 

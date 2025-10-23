@@ -21,9 +21,11 @@ def prepare_summary_prompt(previous_summary, question: str, answer: str) -> str:
 def get_llm_response(prompt: str, question: str) -> str:
     # Prepare messages to pass into LLM
     messages = []
-    messages.append({'role': 'system', 'content': prompt})
     if question:
+        messages.append({'role': 'system', 'content': prompt})
         messages.append({'role': 'user', 'content': question})
+    else:
+        messages.append({'role': 'user', 'content': prompt})
     
     # Get response from LLM
     response = ollama.chat(model=OLLAMA_MODEL, messages=messages)

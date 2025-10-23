@@ -7,29 +7,32 @@ def prepare_vectordb_search_prompt(user_question) -> str:
     return f"Do not make up an answer. Answer the given question strictly based on the following user query: {user_question}"
     
 def prepare_summary_prompt(previous_summary, question: str, answer: str) -> str:
-    summary_prompt = "Summarize the following conversation:\n\n"
+    summary_prompt = """Summarize the following conversation while preserving key details and 
+    conversations's tone:\n\n"""
 
     if previous_summary:
-        summary_prompt += f"Previous chat summary:\n{previous_summary}\n\n"
+        summary_prompt += f"Previous chat summary(s) in a list:\n{previous_summary}\n\n"
         
     summary_prompt += f"Here is the recent chat conversation:"
     summary_prompt += f"\nUser: {question}\nAssistant: {answer}\n\n"
 
     summary_prompt += "Provide a concise summary while keeping important details."
     
-    print(f"VERBOSE: Prepared new chat summary")
+    print(f"VERBOSE: Prepared summary prompt")
     
     return summary_prompt
 
 def get_llm_response(prompt: str, question: str) -> str:
     # Prepare messages to pass into LLM
     messages = []
-    messages.append({'role': 'system', 'content': prompt})
     if question:
+        messages.append({'role': 'system', 'content': prompt})
         messages.append({'role': 'user', 'content': question})
+    else:
+        messages.append({'role': 'user', 'content': prompt})
     
     # Get response from LLM
-    response = ollama.chat(model=OLLAMA_MODEL, messages=messages, tools=[])
+    response = ollama.chat(model=OLLAMA_MODEL, messages=messages)
     
     print(f"VERBOSE: Generated response from LLM")
     
@@ -47,11 +50,11 @@ def prepare_chat_system_prompt(vectordb_results,chat_history, chat_summary) -> s
     
     if chat_summary:
         prompt += "\n\n"
-        prompt += f"Here are the summaries of the last 5 conversations in a list:\n{chat_summary}"
+        prompt += f"Here are the summaries of the last few conversations in a list:\n{chat_summary}"
         
     if chat_history:
         prompt += "\n\n"
-        prompt += f"Here are the last 5 conversation between you and the user in a list:\n{chat_history}"
+        prompt += f"Here are the last few conversation between you and the user in a list:\n{chat_history}"
         
     print(f"VERBOSE: Prepared chat system prompt")
     

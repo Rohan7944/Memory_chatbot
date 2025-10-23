@@ -18,16 +18,18 @@ def generate_response(question):
     
     # Prepare chat system prompt using vector db results and last 5 chat histories and summaries
     system_prompt = prepare_chat_system_prompt(vectordb_results = vectordb_results,
-                                               chat_history     = chat_history[-5:], 
-                                               chat_summary     = previous_chat_summary[-5:])
+                                               chat_history     = chat_history, 
+                                               chat_summary     = previous_chat_summary)
     
     # Get response from LLM
-    response = get_llm_response(system_prompt, question)
+    response = get_llm_response(prompt   = system_prompt, 
+                                question = question)
     
     # Update the databases
     save_chat_responses(question, response)
     summary_prompt = prepare_summary_prompt(previous_chat_summary[-1:], question, response)
-    new_summary = get_llm_response(summary_prompt,None)
+    new_summary = get_llm_response(prompt   = summary_prompt,
+                                   question = None)
     save_chat_summary_record(new_summary)
     update_vector_store(previous_chat_summary)
     
