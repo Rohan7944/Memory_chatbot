@@ -6,3 +6,4 @@ langchain_community
 faiss-cpu
 langchain
 python-dotenv
+tiktoken
