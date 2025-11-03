@@ -1,0 +1,33 @@
+┌──────────────────────────────────────────────┐
+│ Streamlit App: "Chat with Ollama"            │
+└──────────────────────────────────────────────┘
+                    │
+                    ▼
+        ┌───────────────────────────┐
+        │ Step 1: Ask for User ID   │
+        │ (text_input + Start Chat) │
+        └───────────────────────────┘
+                    │
+                    ▼
+        ┌────────────────────────────────────────┐
+        │ Step 2: Initialize DB + chat history   │
+        │ current_id = st.session_state.user_id  │
+        └────────────────────────────────────────┘
+                    │
+                    ▼
+        ┌───────────────────────────────┐
+        │ Step 3: Option to clear chat  │
+        └───────────────────────────────┘
+                    │
+                    ▼
+        ┌───────────────────────────────┐
+        │ Step 4: Display previous chat │
+        └───────────────────────────────┘
+                    │
+                    ▼
+        ┌─────────────────────────────────────────────┐
+        │ Step 5: Get new question via chat_input()   │
+        │ → Call generate_response(question, user_id) │
+        │ → Append (question, response) to history    │
+        │ → Display bot response                      │
+        └─────────────────────────────────────────────┘

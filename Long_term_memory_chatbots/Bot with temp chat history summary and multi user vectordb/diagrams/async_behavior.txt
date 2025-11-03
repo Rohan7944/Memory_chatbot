@@ -1,0 +1,7 @@
+User asks question ──► generate_response()
+       │
+       ├──► LLM returns immediate response (synchronous)
+       │
+       └──► Background thread starts update_databases():
+              • Saves chat + summary
+              • Updates vector DB (knowledge base)

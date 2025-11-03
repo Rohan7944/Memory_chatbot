@@ -1,0 +1,62 @@
+┌────────────────────────────────────────────┐
+│ generate_response(question, user_id)       │
+└────────────────────────────────────────────┘
+                    │
+                    ▼
+        ┌──────────────────────────┐
+        │Get previous chat history │
+        │→ chat_history            │
+        └──────────────────────────┘
+                    │
+                    ▼
+        ┌─────────────────────────────────┐
+        │Get previous chat summaries      │
+        │→ previous_chat_summary          │
+        └─────────────────────────────────┘
+                    │
+                    ▼
+        ┌───────────────────────────────────────────┐
+        │If both chat_history & summary exist       │
+        │→ get older_summaries                      │
+        │Else → older_summaries = []                │
+        └───────────────────────────────────────────┘
+                    │
+                    ▼
+        ┌──────────────────────────────────────────────┐
+        │Get general vector DB search results          │
+        │→ general_vectordb_results                    │
+        └──────────────────────────────────────────────┘
+                    │
+                    ▼
+        ┌──────────────────────────────────────────────┐
+        │Get user-specific vector DB search results    │
+        │→ user_vectordb_results                       │
+        └──────────────────────────────────────────────┘
+                    │
+                    ▼
+        ┌──────────────────────────────────────────────────────────────┐
+        │ Prepare LLM response with all resources                      │
+        │ Inputs: question, history, summaries, vector DB results      │
+        │ → response                                                   │
+        └──────────────────────────────────────────────────────────────┘
+                    │
+                    ▼
+        ┌──────────────────────────────────────────────────────────────┐
+        │ Define background function: update_databases()               │
+        │   1. save_chat_responses(question, response, user_id)        │
+        │   2. prepare_summary_prompt (user + general)                 │
+        │   3. get_llm_response() for summaries                        │
+        │   4. save_chat_summary_record()                              │
+        │   5. update_vector_store() with general summary              │
+        └──────────────────────────────────────────────────────────────┘
+                    │
+                    ▼
+        ┌────────────────────────────────────────────┐
+        │ Start update_databases() in background     │
+        │ → threading.Thread(daemon=True)            │
+        └────────────────────────────────────────────┘
+                    │
+                    ▼
+        ┌───────────────────────────────┐
+        │ RETURN response to Streamlit  │
+        └───────────────────────────────┘
