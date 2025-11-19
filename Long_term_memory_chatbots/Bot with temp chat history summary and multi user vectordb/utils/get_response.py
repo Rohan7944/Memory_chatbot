@@ -25,7 +25,7 @@ def prepare_llm_response_with_resources(
     Max iterations controlled by .env variable MAX_SUMMARIZATION_ITERATIONS.
     """
 
-    prompt = prepare_basic_chat_system_prompt()
+    basic_prompt = prepare_basic_chat_system_prompt()
     print("VERBOSE: Initialized base system prompt")
 
     def get_remaining_tokens(temp_prompt: str) -> tuple[int, int]:
@@ -41,7 +41,7 @@ def prepare_llm_response_with_resources(
         data_slice = resource[-min(len(resource), 100):]
 
         iteration = 0
-        while iteration < MAX_ITERATIONS:
+        while iteration < (int(MAX_ITERATIONS+1)):
             remaining_tokens, used_tokens = get_remaining_tokens(prompt)
             print(f"VERBOSE: Attempting to inject '{resource_name}' (Tokens used: {used_tokens}, Remaining: {remaining_tokens})")
 
@@ -64,12 +64,14 @@ def prepare_llm_response_with_resources(
             if remaining_after > 0:
                 print(f"VERBOSE: Successfully injected '{resource_name}'. Tokens used: {used_after}, Remaining: {remaining_after}")
                 return temp_prompt
-            else:
+            
+            iteration += 1
+            
+            if iteration == MAX_ITERATIONS:
                 print(f"VERBOSE: ⚠️ Context window breached after adding '{resource_name}', generating intermediate response...")
                 intermediate_response = get_llm_response(temp_prompt, question)
                 print(f"VERBOSE: Intermediate response generated after context breach for '{resource_name}'.")
-                prompt = prepare_basic_chat_system_prompt() + "\n\n" + f"Here is a summarized version of prior information:\n{intermediate_response}"
-                iteration += 1
+                prompt = basic_prompt + "\n\n" + f"Here is a summarized version of prior information:\n{intermediate_response}"
                 print(f"VERBOSE: Rebuilt prompt after summarizing '{resource_name}', iteration {iteration}.")
 
         print(f"VERBOSE: Maximum summarization iterations reached for '{resource_name}'. Proceeding with current prompt.")
@@ -77,7 +79,7 @@ def prepare_llm_response_with_resources(
 
     # Inject resources
     prompt = inject_data_resource(
-        prompt=prompt,
+        prompt=basic_prompt,
         resource=chat_history,
         resource_name="chat_history",
         intro_text="Here is the recent chat history between user and assistant:"
